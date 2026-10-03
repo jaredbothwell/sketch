@@ -1,0 +1,23 @@
+{
+  "name": "sketch",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "new": "node scripts/new.mjs"
+  },
+  "dependencies": {
+    "mp4-muxer": "^5.2.1",
+    "p5": "^1.11.10",
+    "tweakpane": "^4.0.5"
+  },
+  "devDependencies": {
+    "@tweakpane/core": "^2.0.5",
+    "@types/node": "^26.6.4",
+    "@types/p5": "^1.7.6",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.0"
+  }
+}

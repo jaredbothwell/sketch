@@ -1,0 +1,14 @@
+{
+  "params": {
+    "count": 2000,
+    "noiseScale": 0.003,
+    "speed": 1.5,
+    "turbulence": 2,
+    "fade": 8,
+    "weight": 1,
+    "bg": "#0d0d12",
+    "ink": "#ff7a3d",
+    "mode": "lines"
+  },
+  "seed": 1
+}
