@@ -23,8 +23,16 @@ Creative-coding sketches (p5.js and GLSL) with a shared viewer. Works for Claude
   - boolean `{ value: true }` → checkbox
   - select `{ value, options: [...] }` → dropdown
   - button `{ button: true }` → calls `onButton(name, ...)`
-- p5: `setup(p, params, ctx)` and `draw(p, params, t, ctx)`. Use the `t` argument (seconds) for animation, not `millis()`/`frameCount`, so video export stays deterministic. Use `p.random`/`p.noise`, which are seeded from `ctx.seed`.
-- glsl: `frag` is a GLSL ES 3.00 body without `#version`. Uniforms are injected: `u_time`, `u_resolution`, `u_mouse`, `u_seed`, and `u_<param>` (float, vec3 for colors, float index for selects). Write to `fragColor`.
+  - palette `{ palette: true, value: <index> }` → palette picker + shuffle; the sketch receives `string[]` (5 hex colors)
+- p5: `setup(p, params, ctx)` and `draw(p, params, t, ctx)`. Use the `t` argument (seconds) for animation, not `millis()`/`frameCount`, so video export stays deterministic. For randomness use `ctx.rng` (or `p.random`/`p.noise`); both are seeded from `ctx.seed`, and `ctx.rng` is re-created on restart.
+- glsl: `frag` is a GLSL ES 3.00 body without `#version`. Uniforms are injected: `u_time`, `u_resolution`, `u_mouse`, `u_seed`, and `u_<param>` (float, vec3 for colors, float index for selects, `vec3[5]` for palettes). Write to `fragColor`.
+
+## Shared library: `src/lib` (import from `'../../src/lib'`)
+Check here before writing your own helper. If you write something reusable, add it here.
+- `math.ts`: `clamp lerp invLerp remap smoothstep fract mod pingpong damp loopT`, shaping functions `bias gain impulse parabola pulse`, `ease.*` easing, `TAU`
+- `random.ts`: `createRng(seed)` (as `ctx.rng`), with `float range int chance sign pick weighted shuffle gaussian onCircle inCircle fork noise2/3/4`. Noise helpers: `fbm ridged warp curl2 loopNoise` (pass `ctx.rng.noise3`, or `noise4` for `loopNoise`)
+- `color.ts`: `palettes` (curated + 200 nice-color-palettes), `gradient gradientFn ramp mix` (OKLab/OKLCH), `adjust lighten darken saturate rotateHue withAlpha`, `splitBackground` → `{ bg, inks }`, `bestContrast sortByLightness rgb01`, cosine palettes `cosine(cosinePresets.sunset, t)`
+- `grid.ts`: `grid` (cells with `cx cy u v`), `hexGrid hexagon`, `subdivide` (recursive rects), `poissonDisk`, `phyllotaxis`
 
 ## Conventions
 - To branch an idea, copy the folder to a new dated id instead of overwriting a sketch that has snapshots.

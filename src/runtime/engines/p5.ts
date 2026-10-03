@@ -1,5 +1,6 @@
 import p5 from 'p5';
 import type { Ctx, Engine, P5Sketch } from '../types';
+import { createRng } from '../../lib/random';
 
 export function mountP5(el: HTMLElement, sketch: P5Sketch<any>, params: Record<string, any>, ctx: Ctx): Engine {
   let t = 0;
@@ -34,7 +35,7 @@ export function mountP5(el: HTMLElement, sketch: P5Sketch<any>, params: Record<s
     renderFrame(time) { t = time; inst.redraw(); },
     play() { playing = true; last = performance.now(); inst.loop(); },
     pause() { playing = false; inst.noLoop(); },
-    reset() { t = 0; seed(inst); sketch.setup?.(inst, params, ctx); },
+    reset() { t = 0; seed(inst); ctx.rng = createRng(ctx.seed); sketch.setup?.(inst, params, ctx); },
     button(name) { sketch.onButton?.(name, inst, params, ctx); },
     destroy() { inst.remove(); },
   };

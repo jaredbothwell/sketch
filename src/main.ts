@@ -3,6 +3,7 @@ import type { Ctx, Engine, Sketch } from './runtime/types';
 import { mountP5 } from './runtime/engines/p5';
 import { mountGlsl } from './runtime/engines/glsl';
 import { buildPane, initValues } from './runtime/params';
+import { createRng } from './lib/random';
 import { canvasToPng, download, recordMp4, stamp } from './runtime/export';
 
 const modules = import.meta.glob<{ default: Sketch }>('/sketches/*/sketch.ts');
@@ -77,7 +78,8 @@ async function viewer(id: string) {
   const saved = readSaved(id);
   const values = initValues(sketch.params, saved.params);
   const [width, height] = sketch.meta.size ?? [800, 800];
-  const ctx: Ctx = { seed: saved.seed ?? 1, width, height };
+  const seed = saved.seed ?? 1;
+  const ctx: Ctx = { seed, width, height, rng: createRng(seed) };
   const persist = () => writeSaved(id, { params: values, seed: ctx.seed });
 
   let engine: Engine | undefined;
@@ -86,6 +88,7 @@ async function viewer(id: string) {
     engine = undefined;
     wrap.innerHTML = '';
     errEl.hidden = true;
+    ctx.rng = createRng(ctx.seed);
     try {
       engine = sketch.engine === 'p5' ? mountP5(wrap, sketch, values, ctx) : mountGlsl(wrap, sketch, values, ctx);
     } catch (e) {
@@ -105,7 +108,7 @@ async function viewer(id: string) {
 
   // ----- controls -----
   const pane = new Pane({ container: app.querySelector<HTMLElement>('.panel')!, title: 'Controls' });
-  buildPane(pane, sketch.params, values, persist, name => engine?.button(name));
+  const params = buildPane(pane, sketch.params, values, persist, name => engine?.button(name));
 
   const sys = { seed: ctx.seed, playing: true, seconds: sketch.meta.loop ?? 5, fps: sketch.meta.fps ?? 60, snapshot: '' };
   const sf = pane.addFolder({ title: 'Sketch' });
@@ -113,7 +116,7 @@ async function viewer(id: string) {
   sf.addBinding(sys, 'seed', { step: 1, min: 0 }).on('change', e => { ctx.seed = e.value; persist(); mount(); });
   sf.addButton({ title: 'Random seed (r)' }).on('click', () => { sys.seed = Math.floor(Math.random() * 1e6); pane.refresh(); });
   sf.addButton({ title: 'Restart' }).on('click', () => engine?.reset());
-  sf.addButton({ title: 'Reset params' }).on('click', () => { Object.assign(values, initValues(sketch.params)); pane.refresh(); persist(); });
+  sf.addButton({ title: 'Reset params' }).on('click', () => { Object.assign(values, initValues(sketch.params)); params.sync(); pane.refresh(); persist(); });
 
   const ef = pane.addFolder({ title: 'Export' });
   const savePng = async () => {
@@ -160,6 +163,7 @@ async function viewer(id: string) {
       const s: Saved = await (await fetch(`/sketches/${id}/snapshots/${e.value}.json`)).json();
       Object.assign(values, initValues(sketch.params, s.params));
       sys.seed = s.seed ?? sys.seed;
+      params.sync();
       pane.refresh();
       status(`restored ${e.value}`);
     });

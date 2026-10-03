@@ -8,12 +8,21 @@ importers:
 
   .:
     dependencies:
+      culori:
+        specifier: ^4.0.2
+        version: 4.0.2
       mp4-muxer:
         specifier: ^5.2.1
         version: 5.2.2
+      nice-color-palettes:
+        specifier: ^4.0.0
+        version: 4.0.0
       p5:
         specifier: ^1.11.10
         version: 1.11.13
+      simplex-noise:
+        specifier: ^4.0.3
+        version: 4.0.3
       tweakpane:
         specifier: ^4.0.5
         version: 4.0.5
@@ -21,6 +30,9 @@ importers:
       '@tweakpane/core':
         specifier: ^2.0.5
         version: 2.0.5
+      '@types/culori':
+        specifier: ^4.0.1
+        version: 4.0.1
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.4
@@ -326,6 +338,9 @@ packages:
   '@tweakpane/core@2.0.5':
     resolution: {integrity: sha512-punBgD5rKCF5vcNo6BsSOXiDR/NSs9VM7SG65QSLJIxfRaGgj54ree9zQW6bO3pNFf3AogiGgaNODUVQRk9YqQ==}
 
+  '@types/culori@4.0.1':
+    resolution: {integrity: sha512-43M51r/22CjhbOXyGT361GZ9vncSVQ39u62x5eJdBQFviI8zWp2X5jzqg7k4M6PVgDQAClpy2bUe2dtwEgEDVQ==}
+
   '@types/dom-webcodecs@0.1.19':
     resolution: {integrity: sha512-+yFUIDUaASFz0vQpWBErPxun/Lb+F0TdrlTsj50gm7K797YzEx2TmV6fEiwciHyFNghlZYPgQXH5qRcwMHcJFQ==}
 
@@ -340,6 +355,10 @@ packages:
 
   '@types/wicg-file-system-access@2020.9.8':
     resolution: {integrity: sha512-ggMz8nOygG7d/stpH40WVaNvBwuyYLnrg5Mbyf6bmsj/8+gb6Ei4ZZ9/4PNpcPNTT8th9Q8sM8wYmWGjMWLX/A==}
+
+  culori@4.0.2:
+    resolution: {integrity: sha512-1+BhOB8ahCn4O0cep0Sh2l9KCOfOdY+BXJnKMHFFzDEouSr/el18QwXEMRlOj9UY5nCeA8UN3a/82rUWRBeyBw==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
   esbuild@0.28.2:
     resolution: {integrity: sha512-HKVLS8dvII+xoKW9kmqxbRKrnWEXfJJr/FZhhJmiqIB0e053QNYFqOBouTMO/k5sID4MvCiUCvv8b9M4h32wIA==}
@@ -369,6 +388,9 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
+  nice-color-palettes@4.0.0:
+    resolution: {integrity: sha512-lP/4LoL0Q9L9JX1UMb80BYbRCqZPnLqzuBCPI7mpqIw1HQjt/jk/U8SJF28EmudAZkJ5zG65x2HYla9wvmdxbw==}
+
   p5@1.11.13:
     resolution: {integrity: sha512-gfGo4AkyuNMs6Ko7UNFM9K2edqFRGyLrFaYUB+XXF127JVdEPu0BIaC5uDDNJpsRMOD9hJMUpsOH4HkfuNhvhA==}
 
@@ -387,6 +409,9 @@ packages:
     resolution: {integrity: sha512-gjA/kFeDfffII8COoPsvLPvE16hWDTEc1+0QKQNKUkuV8iJjqsC4xXs8/FzuL0v9EV39kuxTbAgcFoTRyy2TGQ==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
+
+  simplex-noise@4.0.3:
+    resolution: {integrity: sha512-qSE2I4AngLQG7BXqoZj51jokT4WUXe8mOBrvfOXpci8+6Yu44+/dD5zqDpOx3Ux792eamTd2lLcI8jqFntk/lg==}
 
   source-map-js@1.2.2:
     resolution: {integrity: sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==}
@@ -607,6 +632,8 @@ snapshots:
 
   '@tweakpane/core@2.0.5': {}
 
+  '@types/culori@4.0.1': {}
+
   '@types/dom-webcodecs@0.1.19': {}
 
   '@types/estree@1.0.9': {}
@@ -618,6 +645,8 @@ snapshots:
   '@types/p5@1.7.7': {}
 
   '@types/wicg-file-system-access@2020.9.8': {}
+
+  culori@4.0.2: {}
 
   esbuild@0.28.2:
     optionalDependencies:
@@ -662,6 +691,8 @@ snapshots:
 
   nanoid@3.3.19: {}
 
+  nice-color-palettes@4.0.0: {}
+
   p5@1.11.13: {}
 
   picocolors@1.1.1: {}
@@ -705,6 +736,8 @@ snapshots:
       '@rollup/rollup-win32-x64-gnu': 4.64.0
       '@rollup/rollup-win32-x64-msvc': 4.64.0
       fsevents: 2.3.3
+
+  simplex-noise@4.0.3: {}
 
   source-map-js@1.2.2: {}
 

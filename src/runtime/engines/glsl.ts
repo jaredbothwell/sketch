@@ -1,12 +1,15 @@
-import type { Ctx, Engine, GlslSketch, ParamDefs } from '../types';
+import type { Ctx, Engine, GlslSketch, ParamDef, ParamDefs } from '../types';
+import { rgb01 } from '../../lib/color';
 
 const VERT = `#version 300 es
 in vec2 a_pos;
 void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }`;
 
-function hexToRgb(hex: string): [number, number, number] {
-  const n = parseInt(hex.slice(1, 7), 16);
-  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+const PALETTE_SIZE = 5;
+
+function uniformType(d: ParamDef) {
+  if ('palette' in d) return `vec3`;
+  return 'value' in d && typeof d.value === 'string' && d.value.startsWith('#') ? 'vec3' : 'float';
 }
 
 function compile(gl: WebGL2RenderingContext, type: number, src: string) {
@@ -26,7 +29,7 @@ export function mountGlsl(el: HTMLElement, sketch: GlslSketch<any>, params: Reco
 
   const paramUniforms = Object.entries(sketch.params as ParamDefs)
     .filter(([, d]) => !('button' in d))
-    .map(([k, d]) => `uniform ${'value' in d && typeof d.value === 'string' && d.value.startsWith('#') ? 'vec3' : 'float'} u_${k};`)
+    .map(([k, d]) => `uniform ${uniformType(d)} u_${k}${'palette' in d ? `[${PALETTE_SIZE}]` : ''};`)
     .join('\n');
   const frag = `#version 300 es
 precision highp float;
@@ -73,7 +76,10 @@ ${sketch.frag}`;
     for (const [k, d] of Object.entries(sketch.params as ParamDefs)) {
       if ('button' in d) continue;
       const v = params[k];
-      if (typeof v === 'string' && v.startsWith('#')) gl.uniform3fv(u(`u_${k}`), hexToRgb(v));
+      if ('palette' in d) {
+        const cols = Array.from({ length: PALETTE_SIZE }, (_, i) => rgb01(v[i % v.length]));
+        gl.uniform3fv(u(`u_${k}`), cols.flat());
+      } else if (typeof v === 'string' && v.startsWith('#')) gl.uniform3fv(u(`u_${k}`), rgb01(v));
       else if ('options' in d) gl.uniform1f(u(`u_${k}`), d.options.indexOf(v));
       else gl.uniform1f(u(`u_${k}`), Number(v));
     }

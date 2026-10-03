@@ -1,6 +1,7 @@
-import { defineP5 } from '../../src/runtime/types';
+import { defineP5, type Ctx } from '../../src/runtime/types';
+import { curl2, splitBackground } from '../../src/lib';
 
-type Particle = { x: number; y: number; px: number; py: number };
+type Particle = { x: number; y: number; px: number; py: number; ink: number };
 let particles: Particle[] = [];
 
 export default defineP5({
@@ -12,48 +13,59 @@ export default defineP5({
     turbulence: { value: 2, min: 0.5, max: 8, label: 'turbulence' },
     fade: { value: 8, min: 0, max: 60, step: 1 },
     weight: { value: 1, min: 0.25, max: 4 },
-    bg: { value: '#0d0d12' },
-    ink: { value: '#ff7a3d' },
+    palette: { palette: true, value: 0 },
+    field: { value: 'angle', options: ['angle', 'curl'] },
     mode: { value: 'lines', options: ['lines', 'dots'] },
     scatter: { button: true, label: 'Scatter particles' },
   },
-  setup(p, params) {
-    p.background(params.bg);
-    scatter(p, params.count);
+  setup(p, params, ctx) {
+    p.background(splitBackground(params.palette, 'dark').bg);
+    scatter(ctx, p, params.count);
   },
-  draw(p, params, t) {
-    if (particles.length !== params.count) scatter(p, params.count);
-    const bg = p.color(params.bg);
+  draw(p, params, t, ctx) {
+    if (particles.length !== params.count) scatter(ctx, p, params.count);
+    const { bg: bgHex, inks: inkHex } = splitBackground(params.palette, 'dark');
+    const bg = p.color(bgHex);
     bg.setAlpha(params.fade);
     p.noStroke();
     p.fill(bg);
     p.rect(0, 0, p.width, p.height);
 
-    const ink = p.color(params.ink);
-    ink.setAlpha(140);
-    p.stroke(ink);
+    const inks = inkHex.map(c => { const k = p.color(c); k.setAlpha(140); return k; });
     p.strokeWeight(params.weight);
     for (const q of particles) {
-      const a = p.noise(q.x * params.noiseScale, q.y * params.noiseScale, t * 0.1) * p.TWO_PI * params.turbulence;
-      q.px = q.x; q.py = q.y;
-      q.x += Math.cos(a) * params.speed;
-      q.y += Math.sin(a) * params.speed;
-      if (q.x < 0 || q.x > p.width || q.y < 0 || q.y > p.height) {
-        q.x = q.px = p.random(p.width);
-        q.y = q.py = p.random(p.height);
+      const nx = q.x * params.noiseScale, ny = q.y * params.noiseScale;
+      let vx: number, vy: number;
+      if (params.field === 'curl') {
+        // Curl noise: divergence-free, so particles swirl instead of bunching into lines.
+        [vx, vy] = curl2(ctx.rng.noise3, nx, ny, t * 0.1);
+        const len = Math.hypot(vx, vy) || 1;
+        const turb = Math.min(1, len / params.turbulence);
+        vx = (vx / len) * turb; vy = (vy / len) * turb;
+      } else {
+        const a = p.noise(nx, ny, t * 0.1) * p.TWO_PI * params.turbulence;
+        vx = Math.cos(a); vy = Math.sin(a);
       }
+      q.px = q.x; q.py = q.y;
+      q.x += vx * params.speed;
+      q.y += vy * params.speed;
+      if (q.x < 0 || q.x > p.width || q.y < 0 || q.y > p.height) {
+        q.x = q.px = ctx.rng.range(p.width);
+        q.y = q.py = ctx.rng.range(p.height);
+      }
+      p.stroke(inks[q.ink % inks.length]);
       if (params.mode === 'lines') p.line(q.px, q.py, q.x, q.y);
       else p.point(q.x, q.y);
     }
   },
-  onButton(name, p, params) {
-    if (name === 'scatter') scatter(p, params.count);
+  onButton(name, p, params, ctx) {
+    if (name === 'scatter') scatter(ctx, p, params.count);
   },
 });
 
-function scatter(p: import('p5'), n: number) {
+function scatter(ctx: Ctx, p: import('p5'), n: number) {
   particles = Array.from({ length: n }, () => {
-    const x = p.random(p.width), y = p.random(p.height);
-    return { x, y, px: x, py: y };
+    const x = ctx.rng.range(p.width), y = ctx.rng.range(p.height);
+    return { x, y, px: x, py: y, ink: ctx.rng.int(16) };
   });
 }
