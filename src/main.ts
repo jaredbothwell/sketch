@@ -17,9 +17,9 @@ const load = async (id: string) => (await modules[`/sketches/${id}/sketch.ts`]()
 const DEV = import.meta.env.DEV;
 // Bundled into the build so prod needs no server. In dev, thumbs/snapshots are read live from disk instead.
 const sources = import.meta.glob<string>('/sketches/*/sketch.ts', { query: '?raw', import: 'default' });
-const thumbs = import.meta.glob<string>('/sketches/*/thumb.png', { eager: true, query: '?url', import: 'default' });
+const thumbs = import.meta.glob<string>('/sketches/*/thumb.webp', { eager: true, query: '?url', import: 'default' });
 const snapshotFiles = import.meta.glob<Saved>('/sketches/*/snapshots/*.json', { import: 'default' });
-const thumbUrl = (id: string) => (DEV ? `/sketches/${id}/thumb.png?${Date.now()}` : thumbs[`/sketches/${id}/thumb.png`]);
+const thumbUrl = (id: string) => (DEV ? `/sketches/${id}/thumb.webp?${Date.now()}` : thumbs[`/sketches/${id}/thumb.webp`]);
 
 const app = document.getElementById('app')!;
 let cleanup: (() => void) | undefined;
@@ -41,15 +41,20 @@ function route() {
 async function gallery() {
   app.innerHTML = `<header class="top"><h1>Sketches</h1><span class="muted">${sketchIds.length} sketches${DEV ? ' · <code>pnpm new &lt;name&gt; [p5|glsl]</code>' : ''}</span></header><main class="grid"></main>`;
   const grid = app.querySelector('.grid')!;
-  for (const id of sketchIds) {
-    const s = await load(id).catch(() => undefined);
+  // Render every card immediately; titles fill in as the sketch modules load (in parallel).
+  sketchIds.forEach((id, i) => {
     const a = document.createElement('a');
     a.className = 'card';
     a.href = `#/${id}`;
-    a.innerHTML = `<div class="thumb">${thumbUrl(id) ? `<img src="${thumbUrl(id)}" onerror="this.remove()">` : ''}</div>
-      <div class="info"><strong>${s?.meta.title ?? id}</strong><span class="muted">${s?.engine ?? 'error'} · ${id}</span></div>`;
+    const src = thumbUrl(id);
+    a.innerHTML = `<div class="thumb">${src ? `<img src="${src}" width="480" height="480" decoding="async" loading="${i < 8 ? 'eager' : 'lazy'}" onerror="this.remove()">` : ''}</div>
+      <div class="info"><strong>${id}</strong><span class="muted">${id}</span></div>`;
     grid.appendChild(a);
-  }
+    load(id).then(
+      s => { a.querySelector('strong')!.textContent = s.meta.title; a.querySelector('.muted')!.textContent = `${s.engine} · ${id}`; },
+      () => { a.querySelector('.muted')!.textContent = `error · ${id}`; },
+    );
+  });
 }
 
 // ---------- viewer ----------
@@ -78,6 +83,18 @@ async function api(path: string, body?: unknown) {
   if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
+/** Gallery thumbnail: 480px WebP, much lighter than a full-size PNG. */
+const thumbBase64 = async (c: HTMLCanvasElement) => {
+  const k = Math.min(1, 480 / Math.max(c.width, c.height));
+  const t = document.createElement('canvas');
+  t.width = Math.round(c.width * k); t.height = Math.round(c.height * k);
+  t.getContext('2d')!.drawImage(c, 0, 0, t.width, t.height);
+  const blob = await new Promise<Blob>(r => t.toBlob(b => r(b!), 'image/webp', 0.82));
+  const buf = new Uint8Array(await blob.arrayBuffer());
+  let s = '';
+  for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+  return btoa(s);
+};
 const pngBase64 = async (c: HTMLCanvasElement) => {
   const buf = new Uint8Array(await (await canvasToPng(c)).arrayBuffer());
   let s = '';
@@ -127,9 +144,9 @@ async function viewer(id: string) {
 
   // Auto-thumbnail for the gallery if this sketch doesn't have one yet (dev only).
   const thumbTimer = DEV && setTimeout(async () => {
-    const r = await fetch(`/sketches/${id}/thumb.png`, { method: 'HEAD' });
+    const r = await fetch(`/sketches/${id}/thumb.webp`, { method: 'HEAD' });
     if ((!r.ok || !r.headers.get('content-type')?.includes('image')) && engine) {
-      await api('thumb', { id, png: await pngBase64(engine.canvas) }).catch(() => {});
+      await api('thumb', { id, webp: await thumbBase64(engine.canvas) }).catch(() => {});
     }
   }, 1500);
 
@@ -166,7 +183,7 @@ async function viewer(id: string) {
   if (DEV) {
     ef.addButton({ title: 'Snapshot to repo (S)' }).on('click', snapshot);
     ef.addButton({ title: 'Set as gallery thumbnail' }).on('click', async () => {
-      if (engine) { await api('thumb', { id, png: await pngBase64(engine.canvas) }); status('thumbnail updated'); }
+      if (engine) { await api('thumb', { id, webp: await thumbBase64(engine.canvas) }); status('thumbnail updated'); }
     });
   }
   ef.addBinding(sys, 'seconds', { min: 0.5, max: 120, step: 0.5, label: 'video sec' });

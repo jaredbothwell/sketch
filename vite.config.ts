@@ -31,8 +31,8 @@ function sketchApi(): Plugin {
             fs.writeFileSync(`${base}.png`, Buffer.from(png, 'base64'));
             fs.writeFileSync(`${base}.json`, JSON.stringify(state, null, 2) + '\n');
           } else if (url.pathname === '/thumb' && req.method === 'POST') {
-            const { id, png } = await body(req);
-            fs.writeFileSync(path.join(dir(id), 'thumb.png'), Buffer.from(png, 'base64'));
+            const { id, webp } = await body(req);
+            fs.writeFileSync(path.join(dir(id), 'thumb.webp'), Buffer.from(webp, 'base64'));
           } else if (url.pathname === '/snapshots') {
             const snaps = path.join(dir(url.searchParams.get('id')!), 'snapshots');
             out = fs.existsSync(snaps)
@@ -60,6 +60,6 @@ export default defineConfig({
   server: {
     open: true,
     // Don't full-reload the page when snapshots/thumbnails are written.
-    watch: { ignored: ['**/snapshots/**', '**/thumb.png'] },
+    watch: { ignored: ['**/snapshots/**', '**/thumb.webp'] },
   },
 });

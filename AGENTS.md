@@ -11,7 +11,7 @@ Creative-coding sketches (p5.js and GLSL) with a shared viewer. Works for Claude
 - `sketches/<id>/sketch.ts`: the sketch (default export from `defineP5` or `defineGlsl`)
 - `sketches/<id>/notes.md`: intent and ideas. Read it before changing a sketch, and update it afterwards.
 - `sketches/<id>/snapshots/*.png|json`: saved states (params + seed), written by the viewer
-- `sketches/<id>/thumb.png`: gallery thumbnail
+- `sketches/<id>/thumb.webp`: gallery thumbnail
 - `src/runtime/`: the sketch contract (`types.ts`), engines, params UI, export
 - `src/main.ts`: gallery and viewer. `vite.config.ts` holds the dev API that writes snapshots.
 
