@@ -54,6 +54,8 @@ function sketchApi(): Plugin {
 }
 
 export default defineConfig({
+  // Relative asset paths so the build works from any subpath (GitHub Pages, Netlify, etc.).
+  base: './',
   plugins: [sketchApi()],
   server: {
     open: true,

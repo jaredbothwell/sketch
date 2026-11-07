@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
-    "new": "node scripts/new.mjs"
+    "new": "node scripts/new.mjs",
+    "preview": "vite preview"
   },
   "dependencies": {
     "culori": "^4.0.2",

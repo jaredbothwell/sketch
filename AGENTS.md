@@ -38,3 +38,9 @@ Check here before writing your own helper. If you write something reusable, add 
 - To branch an idea, copy the folder to a new dated id instead of overwriting a sketch that has snapshots.
 - Expose interesting constants as params rather than hard-coding them.
 - Keep each sketch self-contained. Shared helpers go in `src/runtime/`.
+
+## Dev vs deployed
+- `pnpm dev` is the local workspace: the `/__api` plugin writes snapshots/thumbnails into the repo, and `pnpm new` is shown.
+- `pnpm build` makes a static site in `dist/` (deploy anywhere: Netlify, Vercel, GitHub Pages). `src/main.ts` checks `import.meta.env.DEV` and hides the repo-writing tools. Thumbnails, snapshots and sketch source are bundled with `import.meta.glob`.
+- Every build has a "code" button (shows `sketch.ts`) and "Copy share link" (params + seed in `#/<id>?s=…`).
+- The deployed site uses the thumbnails that are on disk at build time. They're created in dev, either automatically or with "Set as gallery thumbnail".
